@@ -6,10 +6,17 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>Kveer.Nocturnal</AssemblyName>
     <RootNamespace>Kveer.Nocturnal</RootNamespace>
+    <StartupObject>Kveer.Nocturnal.Program</StartupObject>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Crypt32Wrapper.cs" />
+    <Compile Remove="ImpersonateUser.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Meziantou.Framework.Win32.CredentialManager" Version="1.4.2" />
   </ItemGroup>
 
 </Project>

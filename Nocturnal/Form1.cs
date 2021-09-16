@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Meziantou.Framework.Win32;
+using Microsoft.Win32.SafeHandles;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -8,6 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,6 +21,12 @@ namespace Kveer.Nocturnal
 {
 	public partial class Form1 : Form
 	{
+		[DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+		public static extern bool LogonUser(String lpszUsername, String lpszDomain, String lpszPassword,
+	   int dwLogonType, int dwLogonProvider, out SafeAccessTokenHandle phToken);
+
+		internal static SafeAccessTokenHandle _token;
+
 		public Form1()
 		{
 			InitializeComponent();
@@ -32,14 +41,32 @@ namespace Kveer.Nocturnal
 
 			if (!isDomainAdmin)
 			{
-				var p = new Process();
-				var pi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName);
-				pi.Verb = "runasuser";
-				pi.UseShellExecute = true;
-				p.StartInfo = pi;
-				var res = p.Start();
+				var creds = CredentialManager.PromptForCredentials(messageText: "Active Directory");
 
-				Application.Exit();
+				const int LOGON32_PROVIDER_DEFAULT = 0;
+				//This parameter causes LogonUser to create a primary token.   
+				const int LOGON32_LOGON_INTERACTIVE = 2;
+
+				// Call LogonUser to obtain a handle to an access token.   
+				SafeAccessTokenHandle safeAccessTokenHandle;
+				bool returnValue = LogonUser(creds.UserName, creds.Domain, creds.Password,
+					LOGON32_LOGON_INTERACTIVE, LOGON32_PROVIDER_DEFAULT,
+					out safeAccessTokenHandle);
+
+				if (!returnValue)
+                {
+					throw new Exception("logon user error");
+                }
+				_token = safeAccessTokenHandle;
+
+				//var p = new Process();
+				//var pi = new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName);
+				//pi.Verb = "runas";
+				//pi.UseShellExecute = true;
+				//p.StartInfo = pi;
+				//var res = p.Start();
+
+				//Application.Exit();
 			}
 			button1.Text += currentUser.Name;
 		}
