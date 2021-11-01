@@ -13,26 +13,19 @@ namespace Kveer.Nocturnal
 	{
 		internal static async Task InternalConnect(string rdpFile)
 		{
-			var proc = Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\System32\mstsc.exe"), $"\"{rdpFile}\" /remoteGuard");
+			//var proc = Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\System32\mstsc.exe"), $"\"{rdpFile}\" /remoteGuard");
+			var proc = Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\System32\mstsc.exe"), $"\"{rdpFile}\"");
 
-			await Task.Delay(5000);
+			await Task.Delay(60*1000);
 			if (File.Exists(rdpFile))
 				File.Delete(rdpFile);
 		}
 
 		public static async Task ConnectAsMyself(string fqdn)
 		{
-			var tmpFile = Path.GetTempFileName();
+			var proc = Process.Start(Environment.ExpandEnvironmentVariables(@"%windir%\System32\mstsc.exe"), $"/v {fqdn}");
 
-			using (var f = File.CreateText(tmpFile))
-			{
-				await f.WriteLineAsync($"full address:s:{fqdn}");
-				await f.WriteLineAsync($"username:s:{Environment.UserName}");
-				await f.WriteLineAsync($"domain:s:{Environment.UserDomainName}");
-				await f.WriteLineAsync($"authentication level:i:2");
-			}
-
-			await InternalConnect(tmpFile);
+			await Task.CompletedTask;
 		}
 
 		public static async Task ConnectAsLocalAdmin(string fqdn, string username, string password)
@@ -49,8 +42,8 @@ namespace Kveer.Nocturnal
 			using (var f = File.CreateText(tmpFile))
 			{
 				await f.WriteLineAsync($"full address:s:{fqdn}");
-				await f.WriteLineAsync($"username:s:{Environment.UserName}");
-				await f.WriteLineAsync($"domain:s:{Environment.UserDomainName}");
+				await f.WriteLineAsync($"username:s:admin-it");
+				await f.WriteLineAsync($"domain:s:.");
 				await f.WriteLineAsync($"authentication level:i:2");
 				await f.WriteLineAsync($"password 51:b:{hexEncPwd}");
 			}
