@@ -60,7 +60,7 @@ namespace Kveer.Nocturnal
 
 		static byte[] GetBytes(string text)
 		{
-			return UnicodeEncoding.Unicode.GetBytes(text);
+			return Encoding.Unicode.GetBytes(text);
 		}
 
 		private static string GetHex(byte[] byt_text)

@@ -4,7 +4,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>Kveer.Nocturnal</AssemblyName>
+    <AssemblyName>Nocturnal</AssemblyName>
     <RootNamespace>Kveer.Nocturnal</RootNamespace>
   </PropertyGroup>
 

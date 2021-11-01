@@ -1,0 +1,60 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:3.1
+    environment:
+      project_name: Nocturnal
+      configuration: Release
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: dotnet restore "${project_name}/${project_name}.csproj"
+      - run:
+          name: Compile project
+          command: dotnet build -c "${configuration}" "${project_name}/${project_name}.csproj"
+      - run:
+          name: Copy artifacts
+          command: |
+            mkdir /artifacts
+            cp ${project_name}/bin/${configuration}/netcoreapp3.1/${project_name}.* /artifacts
+      - store_artifacts:
+          path: /artifacts
+      - persist_to_workspace:
+          root: /artifacts
+          paths:
+            - '*'
+  publish-github-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+          at: ./artifacts
+      - run:
+          name: "Publish Release on Github"
+          command: |
+            release_name=master-$(date '+%Y%m%d')
+            ghr -t "${GITHUB_TOKEN}" -u "${CIRCLE_PROJECT_USERNAME}" -r "${CIRCLE_PROJECT_REPONAME}" -c "${CIRCLE_SHA1}" -delete -draft "${release_name}" ./artifacts/
+
+workflows:
+  version: 2
+  main:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+      - publish-github-release:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^\d+\.\d+\.\d+$/
